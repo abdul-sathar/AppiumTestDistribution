@@ -3,6 +3,7 @@ package com.report.factory;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
+import org.influxdb.dto.Query;
 
 public class InfluxDBManager {
 
@@ -11,6 +12,7 @@ public class InfluxDBManager {
     private static final String DATABASE = "ATD";
 
     static {
+        INFLXUDB.query(new Query("CREATE DATABASE " + DATABASE));
         INFLXUDB.setDatabase(DATABASE);
     }
 
