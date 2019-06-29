@@ -9,6 +9,8 @@ import com.appium.utils.Helpers;
 
 import com.context.SessionContext;
 import com.context.TestExecutionContext;
+import com.report.factory.InfluxDBManager;
+import org.influxdb.dto.Point;
 import org.testng.IInvokedMethod;
 import org.testng.IInvokedMethodListener;
 import org.testng.ISuite;
@@ -22,6 +24,7 @@ import org.testng.SkipException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -143,6 +146,7 @@ public final class AppiumParallelMethodTestListener extends Helpers
      */
     @Override
     public void afterInvocation(IInvokedMethod iInvokedMethod, ITestResult iTestResult) {
+        sendResultsToInfluxDB(iTestResult);
         try {
             if (!isCloudExecution() && !isRetry(iTestResult)) {
                 HashMap<String, String> logs = testLogger.endLogging(iTestResult,
@@ -243,5 +247,21 @@ public final class AppiumParallelMethodTestListener extends Helpers
         return checkNotNull(currentMethods.get(),
             "Did you forget to register the %s listener?",
             AppiumParallelMethodTestListener.class.getName());
+    }
+
+    private void sendResultsToInfluxDB(ITestResult iTestResult) {
+        Point point = Point.measurement("result")
+            .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+            .tag("testclass", iTestResult.getTestClass().getName())
+            .tag("name", iTestResult.getName())
+            .tag("description", iTestResult.getMethod().getDescription())
+            .tag("result", getStatus(iTestResult))
+            .tag("udid", AppiumDeviceManager.getAppiumDevice().getDevice().getUdid())
+            .tag("model", AppiumDeviceManager.getAppiumDevice().getDevice().getDeviceModel())
+            .tag("platform", AppiumDeviceManager.getAppiumDevice().getDevice().getOs())
+            .tag("osVersion", AppiumDeviceManager.getAppiumDevice().getDevice().getOsVersion())
+            .addField("duration", (iTestResult.getEndMillis() - iTestResult.getStartMillis()))
+            .build();
+        InfluxDBManager.send(point);
     }
 }
