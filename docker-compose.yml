@@ -1,0 +1,25 @@
+version: "2.2"
+
+services:
+
+  # InfluxDB
+  db:
+    image: influxdb:1.7.6
+    container_name: db
+    ports:
+      - 8086:8086
+    volumes:
+      - $PWD/db:/var/lib/influxdb
+
+  #Grafana
+  monitoring:
+    image: grafana/grafana:6.2.2
+    container_name: grafana
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    depends_on:
+      - db
+    ports:
+      - 3000:3000
+    volumes:
+      - $PWD/src/test/resources/grafana:/etc/grafana/custom

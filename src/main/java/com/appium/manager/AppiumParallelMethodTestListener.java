@@ -258,6 +258,14 @@ public final class AppiumParallelMethodTestListener extends Helpers
             .tag("udid", AppiumDeviceManager.getAppiumDevice().getDevice().getUdid())
             .tag("platform", AppiumDeviceManager.getAppiumDevice().getDevice().getOs())
             .tag("osVersion", AppiumDeviceManager.getAppiumDevice().getDevice().getOsVersion())
+            .tag("host", AppiumDeviceManager.getAppiumDevice().getHostName())
+            .addField("testclass", iTestResult.getTestClass().getName())
+            .addField("host", AppiumDeviceManager.getAppiumDevice().getHostName())
+            .addField("name", iTestResult.getName())
+            .addField("result", iTestResult.getStatus())
+            .addField("udid", AppiumDeviceManager.getAppiumDevice().getDevice().getUdid())
+            .addField("platform", AppiumDeviceManager.getAppiumDevice().getDevice().getOs())
+            .addField("osVersion", AppiumDeviceManager.getAppiumDevice().getDevice().getOsVersion())
             .addField("duration", (iTestResult.getEndMillis() - iTestResult.getStartMillis()))
             .build();
         InfluxDBManager.send(point);
